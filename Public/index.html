@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Online Radio Station</title>
+  <script src="/socket.io/socket.io.js"></script>
+  <script defer src="client.js"></script>
+</head>
+<body>
+  <h1>Welcome to the Radio Station</h1>
+  <ul id="messages"></ul>
+  <input id="input" type="text">
+  <button onclick="sendMessage()">Send</button>
+
+  <h2>Video Chat</h2>
+  <button id="startVideo">Start Video Chat</button>
+  <div id="videos"></div>
+</body>
+</html>
