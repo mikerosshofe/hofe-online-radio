@@ -5,87 +5,81 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Chat with Video</title>
   <style>
-    body { font-family: Arial, sans-serif; }
-    #messages { list-style-type: none; padding: 0; }
-    #messages li { padding: 8px; margin-bottom: 10px; background: #f4f4f4; }
-    #input { width: 80%; padding: 10px; }
-    #send { padding: 10px; }
-    #videos { display: flex; flex-wrap: wrap; }
-    video { width: 300px; margin: 10px; }
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+    #messages {
+      list-style-type: none;
+      padding: 0;
+      width: 80%;
+      max-height: 50vh;
+      overflow-y: auto;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      background-color: #f9f9f9;
+      margin-bottom: 20px;
+    }
+    #messages li {
+      padding: 8px;
+      margin-bottom: 5px;
+      background: #f4f4f4;
+      border-radius: 5px;
+    }
+    #input {
+      width: 60%;
+      padding: 10px;
+      margin-right: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    #send {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      background-color: #007bff;
+      color: #fff;
+      cursor: pointer;
+    }
+    #startVideo {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      background-color: #28a745;
+      color: #fff;
+      cursor: pointer;
+    }
+    #videos {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 20px;
+    }
+    video {
+      width: 300px;
+      margin: 10px;
+      border-radius: 5px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
   </style>
 </head>
 <body>
   <h1>Chat with Video</h1>
   <ul id="messages"></ul>
-  <input id="input" autocomplete="off" /><button id="send">Send</button>
+  <div>
+    <input id="input" autocomplete="off" placeholder="Type your message...">
+    <button id="send">Send</button>
+  </div>
   <button id="startVideo">Start Video</button>
   <div id="videos"></div>
 
   <script src="/socket.io/socket.io.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/simple-peer@9.11.1/simplepeer.min.js"></script>
-  <script>
-    const socket = io();
-
-    // Chat functionality
-    socket.on('connect', () => {
-      console.log('Connected to server');
-    });
-
-    socket.on('message', (msg) => {
-      const messages = document.getElementById('messages');
-      const message = document.createElement('li');
-      message.textContent = msg;
-      messages.appendChild(message);
-    });
-
-    document.getElementById('send').addEventListener('click', () => {
-      const input = document.getElementById('input');
-      socket.emit('message', input.value);
-      input.value = '';
-    });
-
-    // Peer-to-peer video communication
-    document.getElementById('startVideo').addEventListener('click', () => {
-      const videoContainer = document.getElementById('videos');
-      const myVideo = document.createElement('video');
-      myVideo.muted = true;
-      videoContainer.appendChild(myVideo);
-
-      navigator.mediaDevices.getUserMedia({
-        video: true,
-        audio: true
-      }).then(stream => {
-        myVideo.srcObject = stream;
-        myVideo.play();
-
-        const peer = new SimplePeer({
-          initiator: location.hash === '#init',
-          trickle: false,
-          stream: stream
-        });
-
-        peer.on('signal', data => {
-          socket.emit('signal', {
-            signal: data,
-            callerId: socket.id,
-            target: 'all' // For simplicity, sending signal to all connected users
-          });
-        });
-
-        socket.on('signal', data => {
-          peer.signal(data.signal);
-        });
-
-        peer.on('stream', stream => {
-          const userVideo = document.createElement('video');
-          userVideo.srcObject = stream;
-          userVideo.play();
-          videoContainer.appendChild(userVideo);
-        });
-      }).catch(error => {
-        console.error('Error accessing media devices.', error);
-      });
-    });
-  </script>
+  <script src="client.js"></script>
 </body>
 </html>
