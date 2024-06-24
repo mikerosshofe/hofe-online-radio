@@ -1,46 +1,29 @@
 const express = require('express');
 const http = require('http');
 const socketIo = require('socket.io');
-const path = require('path');
 
 const app = express();
 const server = http.createServer(app);
 const io = socketIo(server);
 
-app.use(express.static(path.join(__dirname, 'public')));
+const port = process.env.PORT || 3000;
 
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
+app.use(express.static('public'));
 
 io.on('connection', (socket) => {
-  console.log('A user connected');
-  socket.on('disconnect', () => {
-    console.log('User disconnected');
-  });
+  console.log('New client connected');
 
   socket.on('message', (msg) => {
     io.emit('message', msg);
   });
 
-  // Handle peer-to-peer video communication
   socket.on('signal', (data) => {
-    io.to(data.target).emit('signal', {
-      signal: data.signal,
-      callerId: data.callerId
-    });
+    socket.broadcast.emit('signal', data);
   });
 
-  socket.on('join-room', (roomId) => {
-    socket.join(roomId);
-    io.to(roomId).emit('user-connected', socket.id);
-
-    socket.on('disconnect', () => {
-      io.to(roomId).emit('user-disconnected', socket.id);
-    });
+  socket.on('disconnect', () => {
+    console.log('Client disconnected');
   });
 });
 
-server.listen(3000, () => {
-  console.log('Listening on *:3000');
-});
+server.listen(port, () => console.log(`Server running on port ${port}`));
